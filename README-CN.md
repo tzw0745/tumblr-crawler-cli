@@ -60,7 +60,7 @@ optional arguments:
 $ python tumblr-crawler.py liamtbyrne
 ```
 
-* 只下载视频，不下载图片:
+* 只下载视频，不下载图片：
 ```shell
 $ python tumblr-cralwer.py -t video liamtbyrne
 ```
