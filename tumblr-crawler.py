@@ -6,7 +6,6 @@ import json
 import os
 import re
 import time
-import traceback
 from threading import Thread
 
 import requests
@@ -20,6 +19,8 @@ except ImportError:
     # Python2 import
     from urlparse import urlparse as urlsplit
     from Queue import Queue
+
+from args import parser
 
 task_down = Queue()  # 待下载队列
 task_fail = Queue()  # 下载失败队列
@@ -104,6 +105,8 @@ def tumblr_posts(session, site, post_type):
         start += page_size
         # 获取文章列表
         r = session.get(api, params=params, timeout=3)
+        if r.status_code != 200:
+            break
         posts = etree.fromstring(r.content).find('posts').findall('post')
         if not posts:
             break
@@ -134,59 +137,69 @@ def tumblr_posts(session, site, post_type):
 
 
 def main():
-    site = 'liamtbyrne'
-    save_dir = os.path.expanduser('~/Pictures/liamtbyrne')
-    os.mkdir(save_dir) if not os.path.isdir(save_dir) else None
+    args = parser.parse_args()
+    args.interval = float(args.interval)
+    if not 0 <= args.interval <= 3:
+        raise ValueError('Arg "INTERVAL" must between 0 and 3')
+    args.worker_num = int(args.worker_num)
+    if not 1 <= args.worker_num <= 10:
+        raise ValueError('Arg "WORK_NUM" must between 1 and 10')
+    args.retry = int(args.retry)
+    if not 0 <= args.retry <= 5:
+        raise ValueError('Arg "RETRY" must between 0 and 5')
+    for site in args.sites:
+        if not re.match(r'^[a-zA-Z0-9_]+$', site):
+            raise ValueError('Args "sites" not match "^[a-zA-Z0-9_]+$"')
 
     session = requests.session()
-    proxy = 'socks5h://127.0.0.1:1080'
-    session.proxies = {'http': proxy, 'https': proxy}
+    if args.proxy:
+        session.proxies = {'http': args.proxy, 'https': args.proxy}
 
-    worker_num = 5
-    retry_num = 3
     # 创建线程池
     worker_pool = []
-    for i in range(worker_num):
+    for i in range(args.worker_num):
         _t = Thread(target=task_handler, args=(i, session))
         _t.setDaemon(True)
         _t.start()
         worker_pool.append(_t)
 
-    global task_down, task_fail, stop_sign
-    for post in tumblr_posts(session, site, 'photo'):
-        post_id, date = post['id'], post['date']
-        # 将图片url加入下载队列
-        for photo_url in post['photos']:
-            photo_name = os.path.split(urlsplit(photo_url).path)[-1]
-            photo_name = '{}.{}.{}'.format(date, post_id, photo_name)
-            photo_path = os.path.join(save_dir, photo_name)
-            task_down.put((photo_path, photo_url))
-    for post in tumblr_posts(session, site, 'video'):
-        # 将视频url加入下载队列
-        video_name = '{i[date]}.{i[id]}.{i[ext]}'.format(i=post)
-        video_path = os.path.join(save_dir, video_name)
-        task_down.put((video_path, post['video']))
+    # 遍历输入站点
+    for site in args.sites:
+        print('start crawler tumblr site: {}'.format(site))
+        site_dir = os.path.join(args.save_dir, site)
 
-    for _retry in range(retry_num):
-        # 下载队列清空后停止所有下载线程
-        while not task_down.empty():
-            continue
-        stop_sign = True
-        if task_fail.empty():
-            break
-        # 存在下载失败任务则重试
-        task_down, task_fail = task_fail, task_down
-        stop_sign = False
-        for worker in worker_pool:
-            worker.start()
+        global task_down, task_fail, stop_sign
+        if args.post_type in ('photo', 'all'):
+            for post in tumblr_posts(session, site, 'photo'):
+                post_id, date = post['id'], post['date']
+                os.mkdir(site_dir) if not os.path.exists(site_dir) else None
+                # 将图片url加入下载队列
+                for photo_url in post['photos']:
+                    photo_name = os.path.split(urlsplit(photo_url).path)[-1]
+                    photo_name = '{}.{}.{}'.format(date, post_id, photo_name)
+                    photo_path = os.path.join(site_dir, photo_name)
+                    task_down.put((photo_path, photo_url))
+        if args.post_type in ('video', 'all'):
+            for post in tumblr_posts(session, site, 'video'):
+                os.mkdir(site_dir) if not os.path.exists(site_dir) else None
+                # 将视频url加入下载队列
+                video_name = '{i[date]}.{i[id]}.{i[ext]}'.format(i=post)
+                video_path = os.path.join(site_dir, video_name)
+                task_down.put((video_path, post['video']))
+
+        for _retry in range(args.retry):
+            # 下载队列清空后停止所有下载线程
+            while not task_down.empty():
+                continue
+            stop_sign = True
+            if task_fail.empty():
+                break
+            # 存在下载失败任务则重试
+            task_down, task_fail = task_fail, task_down
+            stop_sign = False
+            for worker in worker_pool:
+                worker.start()
 
 
 if __name__ == '__main__':
-    try:
-        print(time.asctime().rjust(80, '-'))
-        main()
-        print('\nall done')
-    except Exception as e:
-        print(''.join([str(e), traceback.format_exc()]))
-    finally:
-        print(time.asctime().rjust(80, '-'))
+    main()
