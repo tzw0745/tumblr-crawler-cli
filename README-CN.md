@@ -1,26 +1,28 @@
 # tumblr-crawler
-Tumblr Download Tool with High Speed and Customization.
-### [中文文档](/README-CN.md)
+高性能&高定制化的Tumblr下载工具。
+### [English Document](/README.md)
 
-# Feature
-* Rich command line parameters support.
-* Multi-threaded Download support.
-* Different Type of Proxy support.
-* Python2 & Python3 Compatibility.
+# 特性 
+* 丰富的命令行。
+* 支持多线程下载。
+* 支持不同类型的网络代理。
+* 兼容Python2和Python3。
 
-# Prepare
+# 准备工作
 ```shell
 $ git@github.com:tzw0745/tumblr-crawler-cli.git
 $ cd tumblr-crawler-cli
 $ sudo pip install -r requirements.txt  # -i https://pypi.tuna.tsinghua.edu.cn/simple/
 $ python tumblr-crawler.py --help
 ```
-> **NOTICE:** if you want use socks proxy for this program, you need install another package: **pySocks**
+> 大陆用户推荐使用清华大学TUNA的pypi源以提高pip的安装速度；
+
+> **注意：** 如果想使用socks代理，需要再安装一个第三方模组：**pySocks**
 ```shell
 $ sudo pip install pySocks
 ```
 
-# Usage
+# 使用方法
 ```shell
 usage: tumblr-crawler.py [-h] [-t {video,all,photo}] [-d SAVE_DIR] [-x PROXY]
                          [-o {true,false}] [-w WORKER_NUM] [-i INTERVAL]
@@ -51,37 +53,37 @@ optional arguments:
                         retry times for download failed post, default is 3
 ```
 
-## Example
-* you want download all photos and videos from tumblr [@liamtbyrne](http://liamtbyrne.tumblr.com):
+## 例子
+* 下载Tumblr [@liamtbyrne](http://liamtbyrne.tumblr.com)上所有的图片和视频:
 ```shell
 $ python tumblr-crawler.py liamtbyrne
 ```
 
-* you just want download all videos, not include photos:
+* 只下载视频，不下载图片:
 ```shell
 $ python tumblr-cralwer.py -t video liamtbyrne
 ```
 
-* you want put download all files to another directory:
+* 下载文件到其它文件夹
 ```shell
 $ python tumblr-cralwer.py -d /somedir/ liamtbyrne
 ```
 
-* you want use proxy for download files:
+* 设置网络代理：
 ```shell
 $ python tumblr-cralwer.py --proxy http://127.0.0.1:1080 liamtbyrne  # http proxy
 $ python tumblr-cralwer.py -x socks5h://127.0.0.1:1080 liamtbyrne  # socket5 proxy
 ```
 
-* you want set more thread to speed up the download speed:
+* 设置更多下载线程以提高下载速度：
 ```shell
 $ python tumblr-cralwer.py -w 20 liamtbyrne
 ```
 
-# Coming Feature
-* Customize filename format.
-* Multiple download tools support like wget, aria2c.
-* ...
+# 待添加的功能
+* 自定义下载文件命名格式。
+* 支持多种下载工具，如wget、aria2c等。
+* ……
 
-# Change log
-* 2018-09-28: first version
+# 更新日志
+* 2018年09月28日: 第一个版本

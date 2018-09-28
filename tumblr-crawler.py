@@ -139,11 +139,11 @@ def tumblr_posts(session, site, post_type):
 def main():
     args = parser.parse_args()
     args.interval = float(args.interval)
-    if not 0 <= args.interval <= 3:
-        raise ValueError('Arg "INTERVAL" must between 0 and 3')
+    if not 0 <= args.interval <= 10:
+        raise ValueError('Arg "INTERVAL" must between 0 and 10')
     args.worker_num = int(args.worker_num)
-    if not 1 <= args.worker_num <= 10:
-        raise ValueError('Arg "WORK_NUM" must between 1 and 10')
+    if not 1 <= args.worker_num <= 20:
+        raise ValueError('Arg "WORK_NUM" must between 1 and 20')
     args.retry = int(args.retry)
     if not 0 <= args.retry <= 5:
         raise ValueError('Arg "RETRY" must between 0 and 5')
