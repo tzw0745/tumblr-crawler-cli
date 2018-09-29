@@ -86,4 +86,8 @@ $ python tumblr-cralwer.py -n 20 liamtbyrne
 * ...
 
 # Change log
-* 2018-09-28: first version
+* 2018-09-29:
+  * **Add Temporary File Support to make sure file download completely;**
+  * fix args parse bug;
+  * fix multi thread bug.
+* 2018-09-28: First version

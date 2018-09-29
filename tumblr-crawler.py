@@ -15,11 +15,11 @@ from lxml import etree, html
 try:
     # Python3 import
     from urllib.parse import urlsplit
-    from queue import Queue
+    from queue import Queue, Empty
 except ImportError:
     # Python2 import
     from urlparse import urlparse as urlsplit
-    from Queue import Queue
+    from Queue import Queue, Empty
 
 try:
     # after Python3.2
@@ -53,9 +53,11 @@ def download_thread(thread_name, session, overwrite=False, interval=0.5):
     global queue_down, queue_fail, stop_sign, temp_dir
     while not stop_sign:
         if queue_down.empty():
-            time.sleep(0.1)
             continue
-        task_path, task_url = queue_down.get()
+        try:
+            task_path, task_url = queue_down.get(True, 0.5)
+        except Empty:
+            continue
         # 判断文件是否存在
         if not overwrite and os.path.isfile(task_path):
             print(msg.format('Exists', task_path))
