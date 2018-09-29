@@ -114,6 +114,8 @@ def tumblr_posts(session, site, post_type):
         :param sub_name: 子节点名称
         :return: 子节点的文本
         """
+        if not node.findall(sub_name):
+            return None
         return sorted(
             node.findall(sub_name),
             key=lambda _i: int(_i.get('max-width', '0'))
@@ -127,7 +129,7 @@ def tumblr_posts(session, site, post_type):
         # 获取文章列表
         r = session.get(api, params=params, timeout=3)
         if r.status_code != 200:
-            break
+            raise ValueError('tumblr site "{}" not found'.format(site))
         posts = etree.fromstring(r.content).find('posts').findall('post')
         if not posts:
             break
@@ -146,13 +148,15 @@ def tumblr_posts(session, site, post_type):
                         photos.append(_max_width_sub(photo, 'photo-url'))
                 first_photo = _max_width_sub(post, 'photo-url')
                 photos.append(first_photo) if first_photo not in photos else None
-                post_info['photos'] = photos
+                post_info['photos'] = filter(lambda _p: _p, photos)
                 yield post_info
             elif post_type == 'video':
                 # 获取视频链接
                 video_ext = post.find('video-source').find('extension').text
                 tree = html.fromstring(_max_width_sub(post, 'video-player'))
                 options = json.loads(tree.get('data-crt-options'))
+                if not options['hdUrl']:
+                    options['hdUrl'] = tree.getchildren()[0].get('src')
                 post_info.update({'video': options['hdUrl'], 'ext': video_ext})
                 yield post_info
 
@@ -203,6 +207,7 @@ def main():
                 queue_down.put((video_path, post['video']))
 
         files_count = queue_down.qsize()
+        print('found {} files to download'.format(files_count))
         thread_pool = []
         for _retry in range(args.retry):
             if not thread_pool:

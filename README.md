@@ -90,6 +90,7 @@ $ python tumblr-cralwer.py -n 20 liamtbyrne
 * 2018-09-29:
   * **Add Temporary File Support to make sure file download completely;**
   * add file count hint after program completed;
+  * optimize media extraction compatibility;
   * fix args parse bug;
   * fix multi thread bug.
 * 2018-09-28: First version.
