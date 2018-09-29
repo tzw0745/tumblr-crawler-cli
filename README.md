@@ -2,11 +2,12 @@
 
 # tumblr-crawler
 Tumblr Download Tool with High Speed and Customization.
-![](http://pictures.tzw0745.cn/18-9-28/98992040.jpg)
+![](http://pictures.tzw0745.cn/18-9-29/13036783.jpg)
 
 # Feature
 * Rich command line parameters support.
 * Multi-threaded Download support.
+* File will be download completely.
 * Different Type of Proxy support.
 * Python2 & Python3 Compatibility.
 
@@ -88,6 +89,7 @@ $ python tumblr-cralwer.py -n 20 liamtbyrne
 # Change log
 * 2018-09-29:
   * **Add Temporary File Support to make sure file download completely;**
+  * add file count hint after program completed;
   * fix args parse bug;
   * fix multi thread bug.
-* 2018-09-28: First version
+* 2018-09-28: First version.

@@ -177,15 +177,6 @@ def main():
     if args.proxy:
         session.proxies = {'http': args.proxy, 'https': args.proxy}
 
-    # 创建线程池
-    thread_pool = []
-    for i in range(args.thread_num):
-        thread_args = (i, session, args.overwrite, args.interval)
-        _t = Thread(target=download_thread, args=thread_args)
-        _t.setDaemon(True)
-        _t.start()
-        thread_pool.append(_t)
-
     # 遍历输入站点
     for site in args.sites:
         print('start crawler tumblr site: {}'.format(site))
@@ -211,26 +202,41 @@ def main():
                 video_path = os.path.join(site_dir, video_name)
                 queue_down.put((video_path, post['video']))
 
+        files_count = queue_down.qsize()
+        thread_pool = []
         for _retry in range(args.retry):
-            # 下载队列清空后停止所有下载线程
+            if not thread_pool:
+                # 创建线程池
+                args.thread_num = min(queue_down.qsize(), args.thread_num)
+                for i in range(args.thread_num):
+                    thread_args = (i, session, args.overwrite, args.interval)
+                    _t = Thread(target=download_thread, args=thread_args)
+                    _t.setDaemon(True)
+                    _t.start()
+                    thread_pool.append(_t)
+
+            # 等待下载队列清空
             while not queue_down.empty():
                 continue
+            # 发送线程停止信号并等待下载线程结束
             stop_sign = True
+            for thread in thread_pool:
+                thread.join()
+
+            # 如全部下载成功则结束重试
             if queue_fail.empty():
                 break
-            # 存在下载失败任务则重试
             queue_down, queue_fail = queue_fail, queue_down
             stop_sign = False
-            for thread in thread_pool:
-                thread.start()
+            thread_pool = []
 
-        # 等待下载线程结束
-        for thread in thread_pool:
-            thread.join()
         # 移除临时文件夹
         global temp_dir
         if isinstance(temp_dir, str) and os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
+
+        _ = files_count - queue_down.qsize() - queue_fail.qsize()
+        print('\n{} files found, {} files download.'.format(files_count, _))
 
 
 if __name__ == '__main__':
