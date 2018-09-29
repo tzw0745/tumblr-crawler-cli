@@ -26,8 +26,8 @@ $ sudo pip install pySocks
 
 # 使用方法
 ```shell
-usage: tumblr-crawler.py [-h] [-t {video,all,photo}] [-d SAVE_DIR] [-x PROXY]
-                         [-o {true,false}] [-w WORKER_NUM] [-i INTERVAL]
+usage: tumblr-crawler.py [-h] [-t {photo,all,video}] [-d SAVE_DIR] [-x PROXY]
+                         [-o {false,true}] [-n THREAD_NUM] [-i INTERVAL]
                          [-r RETRY]
                          sites [sites ...]
 
@@ -38,21 +38,21 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t {video,all,photo}, --type {video,all,photo}
+  -t {photo,all,video}, --type {photo,all,video}
                         tumblr post type you want to crawler
   -d SAVE_DIR, --dir SAVE_DIR
                         where to save downloaded files
   -x PROXY, --proxy PROXY
                         proxy for http request, support http/https/socks
-  -o {true,false}, --overwrite {true,false}
+  -o {false,true}, --overwrite {false,true}
                         is overwrite exists file, default is false
-  -w WORKER_NUM, --worker WORKER_NUM
-                        number of worker thread, default is 5
+  -n THREAD_NUM, --thread THREAD_NUM
+                        number of download thread, default is 5
   -i INTERVAL, --interval INTERVAL
-                        download interval for single worker, default is 0.5
+                        download interval for single thread, default is 0.5
                         (seconds)
   -r RETRY, --retry RETRY
-                        retry times for download failed post, default is 3
+                        retry times for download failed file, default is 3
 ```
 
 ## 例子
@@ -79,7 +79,7 @@ $ python tumblr-cralwer.py -x socks5h://127.0.0.1:1080 liamtbyrne  # socket5 pro
 
 * 设置更多下载线程以提高下载速度：
 ```shell
-$ python tumblr-cralwer.py -w 20 liamtbyrne
+$ python tumblr-cralwer.py -n 20 liamtbyrne
 ```
 
 # 待添加的功能

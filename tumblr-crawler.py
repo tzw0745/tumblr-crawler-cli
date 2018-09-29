@@ -22,12 +22,12 @@ except ImportError:
 
 from args import parser
 
-task_down = Queue()  # 待下载队列
-task_fail = Queue()  # 下载失败队列
+queue_down = Queue()  # 待下载队列
+queue_fail = Queue()  # 下载失败队列
 stop_sign = False  # 线程停止信号
 
 
-def task_handler(thread_name, session, overwrite=False, interval=0.5):
+def download_thread(thread_name, session, overwrite=False, interval=0.5):
     """
     持续下载文件，直到stop_sing为True
     :param thread_name: 线程名称，用于输出
@@ -40,11 +40,11 @@ def task_handler(thread_name, session, overwrite=False, interval=0.5):
         raise TypeError('Param "session" must be request.Session')
 
     msg = ' '.join(['Thread', str(thread_name), '{}: {}'])
-    global task_down, task_fail, stop_sign
+    global queue_down, queue_fail, stop_sign
     while not stop_sign:
-        if task_down.empty():
+        if queue_down.empty():
             continue
-        task_path, task_url = task_down.get()
+        task_path, task_url = queue_down.get()
         # 判断文件是否存在
         if not overwrite and os.path.isfile(task_path):
             print(msg.format('Exists', task_path))
@@ -56,7 +56,7 @@ def task_handler(thread_name, session, overwrite=False, interval=0.5):
         except requests.exceptions.RequestException:
             # 请求失败
             print(msg.format('RequestException', task_path))
-            task_fail.put((task_path, task_url))
+            queue_fail.put((task_path, task_url))
             continue
         # 写入文件
         chunk_size = 10 * 1024 * 1024  # 10M缓存
@@ -66,7 +66,7 @@ def task_handler(thread_name, session, overwrite=False, interval=0.5):
                     f.write(content)
         except (IOError, OSError):
             print(msg.format('IO/OSError', task_path))
-            task_fail.put((task_path, task_url))
+            queue_fail.put((task_path, task_url))
             continue
         print(msg.format('Completed', task_path))
 
@@ -77,7 +77,7 @@ def tumblr_posts(session, site, post_type):
     :param session: request.Session，用于发送请求
     :param site: 站点id
     :param post_type: 文章类型，包括photo和video
-    :return: 文章列表迭代器
+    :return: 文章信息列表迭代器
     """
     if not isinstance(session, requests.Session):
         raise TypeError('Param "s" must be requests.Session')
@@ -141,34 +141,36 @@ def main():
     args.interval = float(args.interval)
     if not 0 <= args.interval <= 10:
         raise ValueError('Arg "INTERVAL" must between 0 and 10')
-    args.worker_num = int(args.worker_num)
-    if not 1 <= args.worker_num <= 20:
-        raise ValueError('Arg "WORK_NUM" must between 1 and 20')
+    args.thread_num = int(args.thread_num)
+    if not 1 <= args.thread_num <= 20:
+        raise ValueError('Arg "THREAD_NUM" must between 1 and 20')
     args.retry = int(args.retry)
     if not 0 <= args.retry <= 5:
         raise ValueError('Arg "RETRY" must between 0 and 5')
     for site in args.sites:
         if not re.match(r'^[a-zA-Z0-9_]+$', site):
             raise ValueError('Args "sites" not match "^[a-zA-Z0-9_]+$"')
+    args.overwrite = bool(args.overwrite)
 
     session = requests.session()
     if args.proxy:
         session.proxies = {'http': args.proxy, 'https': args.proxy}
 
     # 创建线程池
-    worker_pool = []
-    for i in range(args.worker_num):
-        _t = Thread(target=task_handler, args=(i, session))
+    thread_pool = []
+    for i in range(args.thread_num):
+        thread_args = (i, session, args.overwrite, args.interval)
+        _t = Thread(target=download_thread, args=thread_args)
         _t.setDaemon(True)
         _t.start()
-        worker_pool.append(_t)
+        thread_pool.append(_t)
 
     # 遍历输入站点
     for site in args.sites:
         print('start crawler tumblr site: {}'.format(site))
         site_dir = os.path.join(args.save_dir, site)
 
-        global task_down, task_fail, stop_sign
+        global queue_down, queue_fail, stop_sign
         if args.post_type in ('photo', 'all'):
             for post in tumblr_posts(session, site, 'photo'):
                 post_id, date = post['id'], post['date']
@@ -178,26 +180,26 @@ def main():
                     photo_name = os.path.split(urlsplit(photo_url).path)[-1]
                     photo_name = '{}.{}.{}'.format(date, post_id, photo_name)
                     photo_path = os.path.join(site_dir, photo_name)
-                    task_down.put((photo_path, photo_url))
+                    queue_down.put((photo_path, photo_url))
         if args.post_type in ('video', 'all'):
             for post in tumblr_posts(session, site, 'video'):
                 os.mkdir(site_dir) if not os.path.exists(site_dir) else None
                 # 将视频url加入下载队列
                 video_name = '{i[date]}.{i[id]}.{i[ext]}'.format(i=post)
                 video_path = os.path.join(site_dir, video_name)
-                task_down.put((video_path, post['video']))
+                queue_down.put((video_path, post['video']))
 
         for _retry in range(args.retry):
             # 下载队列清空后停止所有下载线程
-            while not task_down.empty():
+            while not queue_down.empty():
                 continue
             stop_sign = True
-            if task_fail.empty():
+            if queue_fail.empty():
                 break
             # 存在下载失败任务则重试
-            task_down, task_fail = task_fail, task_down
+            queue_down, queue_fail = queue_fail, queue_down
             stop_sign = False
-            for worker in worker_pool:
+            for worker in thread_pool:
                 worker.start()
 
 
