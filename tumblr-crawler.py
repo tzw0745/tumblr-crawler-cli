@@ -6,6 +6,7 @@ import json
 import os
 import re
 import time
+import shutil
 from threading import Thread
 
 import requests
@@ -19,6 +20,15 @@ except ImportError:
     # Python2 import
     from urlparse import urlparse as urlsplit
     from Queue import Queue
+
+try:
+    # after Python3.2
+    from tempfile import TemporaryDirectory
+
+    temp_dir = TemporaryDirectory('tumblr_crawler_cli')
+except ImportError:
+    temp_dir = '.tumblr_crawler_cli'
+    os.mkdir(temp_dir) if not os.path.exists(temp_dir) else None
 
 from args import parser
 
@@ -40,9 +50,10 @@ def download_thread(thread_name, session, overwrite=False, interval=0.5):
         raise TypeError('Param "session" must be request.Session')
 
     msg = ' '.join(['Thread', str(thread_name), '{}: {}'])
-    global queue_down, queue_fail, stop_sign
+    global queue_down, queue_fail, stop_sign, temp_dir
     while not stop_sign:
         if queue_down.empty():
+            time.sleep(0.1)
             continue
         task_path, task_url = queue_down.get()
         # 判断文件是否存在
@@ -58,13 +69,21 @@ def download_thread(thread_name, session, overwrite=False, interval=0.5):
             print(msg.format('RequestException', task_path))
             queue_fail.put((task_path, task_url))
             continue
-        # 写入文件
+        # 先写入临时文件
+        _temp_name = 'tumblr_thread_{}.downloading'.format(thread_name)
+        _temp_path = os.path.join(
+            temp_dir if isinstance(temp_dir, str) else temp_dir.name,
+            _temp_name
+        )
         chunk_size = 10 * 1024 * 1024  # 10M缓存
         try:
-            with open(task_path, 'wb') as f:
+            with open(_temp_path, 'wb') as f:
                 for content in r.iter_content(chunk_size=chunk_size):
                     f.write(content)
+            # 下载完后再移动到目标目录
+            shutil.move(_temp_path, task_path)
         except (IOError, OSError):
+            print(msg.format('IO/OSError', _temp_path))
             print(msg.format('IO/OSError', task_path))
             queue_fail.put((task_path, task_url))
             continue
@@ -150,7 +169,7 @@ def main():
     for site in args.sites:
         if not re.match(r'^[a-zA-Z0-9_]+$', site):
             raise ValueError('Args "sites" not match "^[a-zA-Z0-9_]+$"')
-    args.overwrite = bool(args.overwrite)
+    args.overwrite = args.overwrite.lower() == 'true'
 
     session = requests.session()
     if args.proxy:
@@ -173,7 +192,7 @@ def main():
         global queue_down, queue_fail, stop_sign
         if args.post_type in ('photo', 'all'):
             for post in tumblr_posts(session, site, 'photo'):
-                post_id, date = post['id'], post['date']
+                post_id, date = post['id'], post['date'].replace(':', '.')
                 os.mkdir(site_dir) if not os.path.exists(site_dir) else None
                 # 将图片url加入下载队列
                 for photo_url in post['photos']:
@@ -185,6 +204,7 @@ def main():
             for post in tumblr_posts(session, site, 'video'):
                 os.mkdir(site_dir) if not os.path.exists(site_dir) else None
                 # 将视频url加入下载队列
+                post['date'] = post['date'].replace(':', '.')
                 video_name = '{i[date]}.{i[id]}.{i[ext]}'.format(i=post)
                 video_path = os.path.join(site_dir, video_name)
                 queue_down.put((video_path, post['video']))
@@ -199,8 +219,16 @@ def main():
             # 存在下载失败任务则重试
             queue_down, queue_fail = queue_fail, queue_down
             stop_sign = False
-            for worker in thread_pool:
-                worker.start()
+            for thread in thread_pool:
+                thread.start()
+
+        # 等待下载线程结束
+        for thread in thread_pool:
+            thread.join()
+        # 移除临时文件夹
+        global temp_dir
+        if isinstance(temp_dir, str) and os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
 
 
 if __name__ == '__main__':
