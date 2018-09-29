@@ -1,7 +1,8 @@
+### [English](/README.md) | 简体中文
+
 # tumblr-crawler
 高性能&高定制化的Tumblr下载工具。
 ![](http://pictures.tzw0745.cn/18-9-28/98992040.jpg)
-### [English Document](/README.md)
 
 # 特性 
 * 丰富的命令行。
