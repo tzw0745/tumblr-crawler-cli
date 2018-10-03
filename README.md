@@ -25,9 +25,9 @@ $ sudo pip install pySocks
 
 # Usage
 ```shell
-usage: tumblr-crawler.py [-h] [-t {photo,all,video}] [-d SAVE_DIR] [-x PROXY]
+usage: tumblr-crawler.py [-h] [-t {all,video,photo}] [-d SAVE_DIR] [-x PROXY]
                          [-o {false,true}] [-n THREAD_NUM] [-i INTERVAL]
-                         [-r RETRY]
+                         [-r RETRIES]
                          sites [sites ...]
 
 Crawler Tumblr Photos and Videos
@@ -37,7 +37,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t {photo,all,video}, --type {photo,all,video}
+  -t {all,video,photo}, --type {all,video,photo}
                         tumblr post type you want to crawler
   -d SAVE_DIR, --dir SAVE_DIR
                         where to save downloaded files
@@ -48,10 +48,9 @@ optional arguments:
   -n THREAD_NUM, --thread THREAD_NUM
                         number of download thread, default is 5
   -i INTERVAL, --interval INTERVAL
-                        download interval for single thread, default is 0.5
-                        (seconds)
-  -r RETRY, --retry RETRY
-                        retry times for download failed file, default is 3
+                        http request interval, default is 0.5 (seconds)
+  -r RETRIES, --retries RETRIES
+                        http request retries, default is 3
 ```
 
 ## Example
@@ -87,12 +86,14 @@ $ python tumblr-cralwer.py -n 20 liamtbyrne
 * ...
 
 # Change log
+* 2018-10-04:
+  * asynchronous & multi-thread parse tumblr site.
 * 2018-10-03:
   * optimize media extraction compatibility.
 * 2018-09-29:
   * **Add Temporary File Support to make sure file download completely;**
   * add file count hint after program completed;
-  * optimize media extraction compatibility;
   * fix args parse bug;
   * fix multi thread bug.
-* 2018-09-28: First version.
+* 2018-09-28:
+  * First version.

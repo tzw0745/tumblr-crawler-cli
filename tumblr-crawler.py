@@ -36,33 +36,79 @@ from args import parser
 
 # endregion
 
+queue_sites = Queue()  # 待解析站点队列
 queue_down = Queue()  # 待下载队列
 queue_fail = Queue()  # 下载失败队列
-stop_sign = False  # 线程停止信号
+down_stop = False  # 下载停止信号
 
 # 当post信息非标准格式时解析图片的正则
 photo_regex = re.compile(r'https://\d+.media.tumblr.com/\w{32}/tumblr_[\w.]+')
 
 
-def download_thread(thread_name, session, overwrite=False, interval=0.5):
+def parse_site_thread(session, post_type, save_dir, retires, interval):
+    """
+    添加图片、视频下载任务到待下载队列
+    :param post_type: post类型
+    :param save_dir: 下载路径
+    :param session: requests.Session
+    :param retires: http请求重试次数
+    :param interval: http请求间隔时间
+    :return:
+    """
+    if not isinstance(session, requests.Session):
+        raise TypeError('Param "session" must be request.Session')
+
+    while not queue_sites.empty():
+        try:
+            site_name = queue_sites.get(block=True, timeout=0.5)
+        except Empty:
+            break
+
+        print('start crawler tumblr site: {}'.format(site_name))
+        site_dir = os.path.join(save_dir, site_name)
+        os.mkdir(site_dir) if not os.path.exists(site_dir) else None
+
+        global queue_down
+        gmt_fmt = '%Y-%m-%d %H.%M.%S GMT'
+        if post_type in ('photo', 'all'):
+            for post in tumblr_posts(session, site_name,
+                                     'photo', retires, interval):
+                post_id, date = post['id'], post['gmt'].strftime(gmt_fmt)
+                # 将图片url加入下载队列
+                for photo_url in post['photos']:
+                    photo_name = os.path.split(urlsplit(photo_url).path)[-1]
+                    photo_name = '{}.{}.{}'.format(date, post_id, photo_name)
+                    photo_path = os.path.join(site_dir, photo_name)
+                    queue_down.put((photo_path, photo_url))
+        if post_type in ('video', 'all'):
+            for post in tumblr_posts(session, site_name,
+                                     'video', retires, interval):
+                # 将视频url加入下载队列
+                post['date'] = post['gmt'].strftime(gmt_fmt)
+                video_name = '{i[date]}.{i[id]}.{i[ext]}'.format(i=post)
+                video_path = os.path.join(site_dir, video_name)
+                queue_down.put((video_path, post['video']))
+
+
+def download_thread(thread_name, session, overwrite, interval):
     """
     持续下载文件，直到stop_sing为True
     :param thread_name: 线程名称，用于输出
-    :param session: request.Session
+    :param session: requests.Session
     :param overwrite: 是否覆盖已存在文件
-    :param interval: 单个进程下载文件的间隔，减少出现异常的概率
+    :param interval: http请求间隔时间
     :return:
     """
     if not isinstance(session, requests.Session):
         raise TypeError('Param "session" must be request.Session')
 
     msg = ' '.join(['Thread', str(thread_name), '{}: {}'])
-    global queue_down, queue_fail, stop_sign, temp_dir
-    while not stop_sign:
+    global queue_down, queue_fail, down_stop, temp_dir
+    while not down_stop:
         if queue_down.empty():
             continue
         try:
-            task_path, task_url = queue_down.get(True, 0.5)
+            task_path, task_url = queue_down.get(block=True, timeout=0.5)
         except Empty:
             continue
         # 判断文件是否存在
@@ -99,12 +145,14 @@ def download_thread(thread_name, session, overwrite=False, interval=0.5):
         print(msg.format('Completed', task_path))
 
 
-def tumblr_posts(session, site, post_type):
+def tumblr_posts(session, site, post_type, retries, interval):
     """
     获取tumblr博客下所有的文章
     :param session: request.Session，用于发送请求
     :param site: 站点id
     :param post_type: 文章类型，包括photo和video
+    :param retries: http请求重试次数
+    :param interval: http请求间隔时间
     :return: 文章信息列表迭代器
     """
     if not isinstance(session, requests.Session):
@@ -133,8 +181,18 @@ def tumblr_posts(session, site, post_type):
         params = {'type': post_type, 'num': page_size, 'start': start}
         start += page_size
         # 获取文章列表
-        r = session.get(api, params=params, timeout=3)
-        if r.status_code != 200:
+        for _retry in range(retries + 1):
+            try:
+                time.sleep(interval)
+                r = session.get(api, params=params, timeout=3)
+                if r.status_code not in (200, 404):
+                    continue
+                break
+            except requests.exceptions.RequestException:
+                continue
+        else:
+            break
+        if r.status_code == 404:
             raise ValueError('tumblr site "{}" not found'.format(site))
         posts = etree.fromstring(r.content).find('posts').findall('post')
         if not posts:
@@ -173,88 +231,80 @@ def tumblr_posts(session, site, post_type):
                 post_info.update({'video': options['hdUrl'], 'ext': video_ext})
                 yield post_info
 
+        time.sleep(interval)
+
 
 def main():
     args = parser.parse_args()
+    # region args check
     args.interval = float(args.interval)
     if not 0 <= args.interval <= 10:
         raise ValueError('Arg "INTERVAL" must between 0 and 10')
     args.thread_num = int(args.thread_num)
     if not 1 <= args.thread_num <= 20:
         raise ValueError('Arg "THREAD_NUM" must between 1 and 20')
-    args.retry = int(args.retry)
-    if not 0 <= args.retry <= 5:
-        raise ValueError('Arg "RETRY" must between 0 and 5')
+    args.retries = int(args.retries)
+    if not 0 <= args.retries <= 5:
+        raise ValueError('Arg "retries" must between 0 and 5')
     for site in args.sites:
         if not re.match(r'^[a-zA-Z0-9_]+$', site):
             raise ValueError('Args "sites" not match "^[a-zA-Z0-9_]+$"')
     args.overwrite = args.overwrite.lower() == 'true'
+    # endregion
 
     session = requests.session()
     if args.proxy:
         session.proxies = {'http': args.proxy, 'https': args.proxy}
 
-    # 遍历输入站点
-    for site in args.sites:
-        print('start crawler tumblr site: {}'.format(site))
-        site_dir = os.path.join(args.save_dir, site)
+    global queue_sites, queue_down, queue_fail, down_stop
+    # 加入待解析站点队列
+    for site_name in args.sites:
+        queue_sites.put(site_name)
+    # 多线程解析站点（最多3个线程）
+    _parse_thread_num = min(len(args.sites), 3)
+    parse_thread_pool = []
+    for i in range(_parse_thread_num):
+        thread_args = (session, args.post_type, args.save_dir,
+                       args.retries, args.interval)
+        _t = Thread(target=parse_site_thread, args=thread_args)
+        _t.setDaemon(True)
+        _t.start()
+        parse_thread_pool.append(_t)
 
-        global queue_down, queue_fail, stop_sign
-        gmt_fmt = '%Y-%m-%d %H.%M.%S GMT'
-        if args.post_type in ('photo', 'all'):
-            for post in tumblr_posts(session, site, 'photo'):
-                post_id, date = post['id'], post['gmt'].strftime(gmt_fmt)
-                os.mkdir(site_dir) if not os.path.exists(site_dir) else None
-                # 将图片url加入下载队列
-                for photo_url in post['photos']:
-                    photo_name = os.path.split(urlsplit(photo_url).path)[-1]
-                    photo_name = '{}.{}.{}'.format(date, post_id, photo_name)
-                    photo_path = os.path.join(site_dir, photo_name)
-                    queue_down.put((photo_path, photo_url))
-        if args.post_type in ('video', 'all'):
-            for post in tumblr_posts(session, site, 'video'):
-                os.mkdir(site_dir) if not os.path.exists(site_dir) else None
-                # 将视频url加入下载队列
-                post['date'] = post['gmt'].strftime(gmt_fmt)
-                video_name = '{i[date]}.{i[id]}.{i[ext]}'.format(i=post)
-                video_path = os.path.join(site_dir, video_name)
-                queue_down.put((video_path, post['video']))
+    # 多线程下载
+    down_thread_pool = []
+    for _retry in range(args.retries + 1):
+        if not down_thread_pool:
+            # 创建下载线程池
+            for i in range(args.thread_num):
+                thread_args = (i, session, args.overwrite, args.interval)
+                _t = Thread(target=download_thread, args=thread_args)
+                _t.setDaemon(True)
+                _t.start()
+                down_thread_pool.append(_t)
 
-        files_count = queue_down.qsize()
-        thread_pool = []
-        for _retry in range(args.retry):
-            if not thread_pool:
-                # 创建线程池
-                args.thread_num = min(queue_down.qsize(), args.thread_num)
-                for i in range(args.thread_num):
-                    thread_args = (i, session, args.overwrite, args.interval)
-                    _t = Thread(target=download_thread, args=thread_args)
-                    _t.setDaemon(True)
-                    _t.start()
-                    thread_pool.append(_t)
+        # 等待站点解析线程结束
+        for thread in parse_thread_pool:
+            thread.join()
+        # 等待下载队列清空
+        while not queue_down.empty():
+            continue
+        # 发送下载停止信号并等待下载线程结束
+        down_stop = True
+        for thread in down_thread_pool:
+            thread.join()
 
-            # 等待下载队列清空
-            while not queue_down.empty():
-                continue
-            # 发送线程停止信号并等待下载线程结束
-            stop_sign = True
-            for thread in thread_pool:
-                thread.join()
-
-            # 如全部下载成功则结束重试
-            if queue_fail.empty():
-                break
-            queue_down, queue_fail = queue_fail, queue_down
-            stop_sign = False
-            thread_pool = []
+        # 如全部下载成功则结束重试
+        if queue_fail.empty():
+            break
+        queue_down, queue_fail = queue_fail, queue_down
+        down_stop = False
+        down_thread_pool = []
 
         # 移除临时文件夹
         global temp_dir
         if isinstance(temp_dir, str) and os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
-
-        _ = files_count - queue_down.qsize() - queue_fail.qsize()
-        print('\n{} files found, {} files download.'.format(files_count, _))
 
 
 if __name__ == '__main__':

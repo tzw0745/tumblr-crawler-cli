@@ -27,9 +27,9 @@ $ sudo pip install pySocks
 
 # 使用方法
 ```shell
-usage: tumblr-crawler.py [-h] [-t {photo,all,video}] [-d SAVE_DIR] [-x PROXY]
+usage: tumblr-crawler.py [-h] [-t {all,video,photo}] [-d SAVE_DIR] [-x PROXY]
                          [-o {false,true}] [-n THREAD_NUM] [-i INTERVAL]
-                         [-r RETRY]
+                         [-r RETRIES]
                          sites [sites ...]
 
 Crawler Tumblr Photos and Videos
@@ -39,7 +39,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t {photo,all,video}, --type {photo,all,video}
+  -t {all,video,photo}, --type {all,video,photo}
                         tumblr post type you want to crawler
   -d SAVE_DIR, --dir SAVE_DIR
                         where to save downloaded files
@@ -50,10 +50,9 @@ optional arguments:
   -n THREAD_NUM, --thread THREAD_NUM
                         number of download thread, default is 5
   -i INTERVAL, --interval INTERVAL
-                        download interval for single thread, default is 0.5
-                        (seconds)
-  -r RETRY, --retry RETRY
-                        retry times for download failed file, default is 3
+                        http request interval, default is 0.5 (seconds)
+  -r RETRIES, --retries RETRIES
+                        http request retries, default is 3
 ```
 
 ## 例子
@@ -89,12 +88,14 @@ $ python tumblr-cralwer.py -n 20 liamtbyrne
 * ……
 
 # 更新日志
+* 2018年10月04日：
+  * 异步&多线程解析tumblr站点。
 * 2018年10月03日：
   * 优化媒体文件提取兼容性。
 * 2018年09月29日：
   * **使用临时文件机制以确保文件被完整下载；**
   * 程序结束时提示文件总数；
-  * 优化媒体文件提取兼容性；
   * 修复命令行参数BUG；
   * 修复多线程BUG。
-* 2018年09月28日：第一个版本。
+* 2018年09月28日：
+  * 第一个版本。

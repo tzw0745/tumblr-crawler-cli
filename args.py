@@ -46,10 +46,10 @@ parser.add_argument(
 )
 parser.add_argument(
     '-i', '--interval', dest='interval', default=0.5,
-    help='download interval for single thread, default is 0.5 (seconds)'
+    help='http request interval, default is 0.5 (seconds)'
 )
 parser.add_argument(
-    '-r', '--retry', dest='retry', default=3,
-    help='retry times for download failed file, default is 3'
+    '-r', '--retries', dest='retries', default=3,
+    help='http request retries, default is 3'
 )
 parser.add_argument(dest='sites', help='sites', nargs='+')
