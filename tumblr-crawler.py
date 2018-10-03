@@ -157,8 +157,8 @@ def tumblr_posts(session, site, post_type, retries, interval):
     """
     if not isinstance(session, requests.Session):
         raise TypeError('Param "s" must be requests.Session')
-    if not re.match(r'^[a-zA-Z0-9_]+$', site):
-        raise ValueError('Param "site" not match "^[a-zA-Z0-9_]+$"')
+    if not re.match(r'^[a-zA-Z0-9_-]+$', site):
+        raise ValueError('Param "site" not match "^[a-zA-Z0-9_-]+$"')
     if post_type not in ('photo', 'video'):
         raise ValueError('Param "post_type" must be "photo" or "video"')
 
@@ -247,8 +247,8 @@ def main():
     if not 0 <= args.retries <= 5:
         raise ValueError('Arg "retries" must between 0 and 5')
     for site in args.sites:
-        if not re.match(r'^[a-zA-Z0-9_]+$', site):
-            raise ValueError('Args "sites" not match "^[a-zA-Z0-9_]+$"')
+        if not re.match(r'^[a-zA-Z0-9_-]+$', site):
+            raise ValueError('Args "sites" not match "^[a-zA-Z0-9_-]+$"')
     args.overwrite = args.overwrite.lower() == 'true'
     # endregion
 
