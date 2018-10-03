@@ -2,10 +2,12 @@
 """
 Created by tzw0745 at 18-9-28
 """
+# region import
 import json
 import os
 import re
 import time
+from datetime import datetime
 import shutil
 from threading import Thread
 
@@ -32,9 +34,14 @@ except ImportError:
 
 from args import parser
 
+# endregion
+
 queue_down = Queue()  # 待下载队列
 queue_fail = Queue()  # 下载失败队列
 stop_sign = False  # 线程停止信号
+
+# 当post信息非标准格式时解析图片的正则
+photo_regex = re.compile(r'https://\d+.media.tumblr.com/\w{32}/tumblr_[\w.]+')
 
 
 def download_thread(thread_name, session, overwrite=False, interval=0.5):
@@ -114,14 +121,13 @@ def tumblr_posts(session, site, post_type):
         :param sub_name: 子节点名称
         :return: 子节点的文本
         """
-        if not node.findall(sub_name):
-            return None
         return sorted(
             node.findall(sub_name),
             key=lambda _i: int(_i.get('max-width', '0'))
         )[-1].text
 
     page_size, start = 50, 0
+    gmt_fmt = '%Y-%m-%d %H:%M:%S GMT'
     while True:
         api = 'http://{}.tumblr.com/api/read'.format(site)
         params = {'type': post_type, 'num': page_size, 'start': start}
@@ -137,22 +143,29 @@ def tumblr_posts(session, site, post_type):
         for post in posts:
             post_info = {
                 'id': post.get('id'),
-                'date': post.get('date-gmt'),
+                'gmt': datetime.strptime(post.get('date-gmt'), gmt_fmt),
                 'type': post_type
             }
             if post_type == 'photo':
                 # 获取文章下所有图片链接
-                photos = []
-                for photo_set in post.iterfind('photoset'):
-                    for photo in photo_set.iterfind('photo'):
-                        photos.append(_max_width_sub(photo, 'photo-url'))
-                first_photo = _max_width_sub(post, 'photo-url')
-                photos.append(first_photo) if first_photo not in photos else None
-                post_info['photos'] = filter(lambda _p: _p, photos)
+                if post.findall('photo-url'):  # 标准格式
+                    photos = []
+                    for photo_set in post.iterfind('photoset'):
+                        for photo in photo_set.iterfind('photo'):
+                            photos.append(_max_width_sub(photo, 'photo-url'))
+                    first_photo = _max_width_sub(post, 'photo-url')
+                    if first_photo:
+                        photos.append(first_photo)
+                else:  # 非标准格式，用正则
+                    photos = photo_regex.findall(''.join(post.itertext()))
+                post_info['photos'] = photos
                 yield post_info
             elif post_type == 'video':
                 # 获取视频链接
-                video_ext = post.find('video-source').find('extension').text
+                try:
+                    video_ext = post.find('video-source').find('extension').text
+                except AttributeError:  # 忽略非标准格式
+                    continue
                 tree = html.fromstring(_max_width_sub(post, 'video-player'))
                 options = json.loads(tree.get('data-crt-options'))
                 if not options['hdUrl']:
@@ -187,9 +200,10 @@ def main():
         site_dir = os.path.join(args.save_dir, site)
 
         global queue_down, queue_fail, stop_sign
+        gmt_fmt = '%Y-%m-%d %H.%M.%S GMT'
         if args.post_type in ('photo', 'all'):
             for post in tumblr_posts(session, site, 'photo'):
-                post_id, date = post['id'], post['date'].replace(':', '.')
+                post_id, date = post['id'], post['gmt'].strftime(gmt_fmt)
                 os.mkdir(site_dir) if not os.path.exists(site_dir) else None
                 # 将图片url加入下载队列
                 for photo_url in post['photos']:
@@ -201,13 +215,12 @@ def main():
             for post in tumblr_posts(session, site, 'video'):
                 os.mkdir(site_dir) if not os.path.exists(site_dir) else None
                 # 将视频url加入下载队列
-                post['date'] = post['date'].replace(':', '.')
+                post['date'] = post['gmt'].strftime(gmt_fmt)
                 video_name = '{i[date]}.{i[id]}.{i[ext]}'.format(i=post)
                 video_path = os.path.join(site_dir, video_name)
                 queue_down.put((video_path, post['video']))
 
         files_count = queue_down.qsize()
-        print('found {} files to download'.format(files_count))
         thread_pool = []
         for _retry in range(args.retry):
             if not thread_pool:

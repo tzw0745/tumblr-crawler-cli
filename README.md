@@ -87,6 +87,8 @@ $ python tumblr-cralwer.py -n 20 liamtbyrne
 * ...
 
 # Change log
+* 2018-10-03:
+  * optimize media extraction compatibility.
 * 2018-09-29:
   * **Add Temporary File Support to make sure file download completely;**
   * add file count hint after program completed;
