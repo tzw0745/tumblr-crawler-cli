@@ -2,7 +2,7 @@
 
 # tumblr-crawler
 高性能&高定制化的Tumblr下载工具。
-![](http://pictures.tzw0745.cn/18-9-29/13036783.jpg)
+![](http://pictures.tzw0745.cn/18-10-4/1538641468.webp)
 
 # 特性 
 * 丰富的命令行。
@@ -27,32 +27,29 @@ $ sudo pip install pySocks
 
 # 使用方法
 ```shell
-usage: tumblr-crawler.py [-h] [-t {all,video,photo}] [-d SAVE_DIR] [-x PROXY]
-                         [-o {false,true}] [-n THREAD_NUM] [-i INTERVAL]
-                         [-r RETRIES]
+usage: tumblr-crawler.py [-h] [-t {all,photo,video}] [-d SAVE_DIR] [-x PROXY]
+                         [-n THREAD_NUM] [--overwrite] [--interval INTERVAL]
+                         [--retries RETRIES]
                          sites [sites ...]
 
 Crawler Tumblr Photos and Videos
 
 positional arguments:
-  sites                 sites
+  sites                 tumblr sites
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t {all,video,photo}, --type {all,video,photo}
+  -t {all,photo,video}, --type {all,photo,video}
                         tumblr post type you want to crawler
   -d SAVE_DIR, --dir SAVE_DIR
-                        where to save downloaded files
+                        download file save directory
   -x PROXY, --proxy PROXY
-                        proxy for http request, support http/https/socks
-  -o {false,true}, --overwrite {false,true}
-                        is overwrite exists file, default is false
+                        http request agent, support http/socks
   -n THREAD_NUM, --thread THREAD_NUM
-                        number of download thread, default is 5
-  -i INTERVAL, --interval INTERVAL
-                        http request interval, default is 0.5 (seconds)
-  -r RETRIES, --retries RETRIES
-                        http request retries, default is 3
+                        number of download threads, default is 5
+  --overwrite           overwrite file (if it exists)
+  --interval INTERVAL   http request interval, default is 0.5 (seconds)
+  --retries RETRIES     http request retries, default is 3
 ```
 
 ## 例子
@@ -89,7 +86,9 @@ $ python tumblr-cralwer.py -n 20 liamtbyrne
 
 # 更新日志
 * 2018年10月04日：
-  * 异步&多线程解析tumblr站点。
+  * 异步&多线程解析tumblr站点；
+  * 优化代码结构；
+  * 修改命令行参数。
 * 2018年10月03日：
   * 优化媒体文件提取兼容性。
 * 2018年09月29日：
