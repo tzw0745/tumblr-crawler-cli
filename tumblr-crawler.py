@@ -72,7 +72,7 @@ def _get(url, params=None, **kwargs):
             pass
     else:
         time.sleep(cli_args.interval)
-        r = requests.get(url, params=params, **kwargs)
+        r = session.get(url, params=params, **kwargs)
 
     return r
 
