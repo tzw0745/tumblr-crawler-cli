@@ -1,6 +1,6 @@
 ### [English](/README.md) | 简体中文
 
-# tumblr-crawler
+# tumblr-crawler-cli
 高性能&高定制化的Tumblr下载工具。
 ![](http://pictures.tzw0745.cn/18-9-29/13036783.jpg)
 
