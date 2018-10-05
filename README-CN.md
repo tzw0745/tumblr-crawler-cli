@@ -13,16 +13,16 @@
 
 # 准备工作
 ```shell
-$ git@github.com:tzw0745/tumblr-crawler-cli.git
+$ git clone git@github.com:tzw0745/tumblr-crawler-cli.git
 $ cd tumblr-crawler-cli
-$ sudo pip install -r requirements.txt  # -i https://pypi.tuna.tsinghua.edu.cn/simple/
+$ pip install -r requirements.txt  # -i https://pypi.tuna.tsinghua.edu.cn/simple/
 $ python tumblr-crawler.py --help
 ```
 > 大陆用户推荐使用清华大学TUNA的pypi源以提高pip的安装速度；
 
 > **注意：** 如果想使用socks代理，需要再安装一个第三方模组：**pySocks**
 ```shell
-$ sudo pip install pySocks
+$ pip install pySocks
 ```
 
 # 使用方法

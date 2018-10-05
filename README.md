@@ -13,14 +13,14 @@ Tumblr Download Tool with High Speed and Customization.
 
 # Prepare
 ```shell
-$ git@github.com:tzw0745/tumblr-crawler-cli.git
+$ git clone git@github.com:tzw0745/tumblr-crawler-cli.git
 $ cd tumblr-crawler-cli
-$ sudo pip install -r requirements.txt  # -i https://pypi.tuna.tsinghua.edu.cn/simple/
+$ pip install -r requirements.txt  # -i https://pypi.tuna.tsinghua.edu.cn/simple/
 $ python tumblr-crawler.py --help
 ```
 > **NOTICE:** if you want use socks proxy for this program, you need install another package: **pySocks**
 ```shell
-$ sudo pip install pySocks
+$ pip install pySocks
 ```
 
 # Usage
