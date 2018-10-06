@@ -28,8 +28,8 @@ $ pip install pySocks
 # 使用方法
 ```shell
 usage: tumblr-crawler.py [-h] [-t {all,photo,video}] [-d SAVE_DIR] [-x PROXY]
-                         [-n THREAD_NUM] [--overwrite] [--interval INTERVAL]
-                         [--retries RETRIES]
+                         [-n THREAD_NUM] [--min MIN_SIZE] [--overwrite]
+                         [--interval INTERVAL] [--retries RETRIES]
                          sites [sites ...]
 
 Crawler Tumblr Photos and Videos
@@ -47,6 +47,8 @@ optional arguments:
                         http request agent, support http/socks
   -n THREAD_NUM, --thread THREAD_NUM
                         number of download threads, default is 5
+  --min MIN_SIZE        minimum size of downloaded files, default is 0k
+                        (unlimited)
   --overwrite           overwrite file (if it exists)
   --interval INTERVAL   http request interval, default is 0.5 (seconds)
   --retries RETRIES     http request retries, default is 3
@@ -79,12 +81,20 @@ $ python tumblr-cralwer.py -x socks5h://127.0.0.1:1080 liamtbyrne  # socket5 pro
 $ python tumblr-cralwer.py -n 20 liamtbyrne
 ```
 
+* 只希望下载超过一定大小的文件：
+```shell
+$ python tumblr-cralwer.py --min 0.5m liamtbyrne  # 只下载超过512k的文件
+$ python tumblr-rawlwer.py --min 100k liamtbyrne  # 只下载超过100k的文件
+```
+
 # 待添加的功能
 * 自定义下载文件命名格式。
 * 支持多种下载工具，如wget、aria2c等。
 * ……
 
 # 更新日志
+* 2018年10月06日：
+  * 增加最小文件体积设置。
 * 2018年10月04日：
   * 异步&多线程解析tumblr站点；
   * 优化代码结构；

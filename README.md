@@ -26,8 +26,8 @@ $ pip install pySocks
 # Usage
 ```shell
 usage: tumblr-crawler.py [-h] [-t {all,photo,video}] [-d SAVE_DIR] [-x PROXY]
-                         [-n THREAD_NUM] [--overwrite] [--interval INTERVAL]
-                         [--retries RETRIES]
+                         [-n THREAD_NUM] [--min MIN_SIZE] [--overwrite]
+                         [--interval INTERVAL] [--retries RETRIES]
                          sites [sites ...]
 
 Crawler Tumblr Photos and Videos
@@ -45,6 +45,8 @@ optional arguments:
                         http request agent, support http/socks
   -n THREAD_NUM, --thread THREAD_NUM
                         number of download threads, default is 5
+  --min MIN_SIZE        minimum size of downloaded files, default is 0k
+                        (unlimited)
   --overwrite           overwrite file (if it exists)
   --interval INTERVAL   http request interval, default is 0.5 (seconds)
   --retries RETRIES     http request retries, default is 3
@@ -77,12 +79,20 @@ $ python tumblr-cralwer.py -x socks5h://127.0.0.1:1080 liamtbyrne  # socket5 pro
 $ python tumblr-cralwer.py -n 20 liamtbyrne
 ```
 
+* you only want to download files larger than a certain size:
+```shell
+$ python tumblr-cralwer.py --min 0.5m liamtbyrne  # only download files larger than 512k
+$ python tumblr-rawlwer.py --min 100k liamtbyrne  # only download files larger than 100k
+```
+
 # Coming Feature
 * Customize filename format.
 * Multiple download tools support like wget, aria2c.
 * ...
 
 # Change log
+* 2018-10-06:
+  * add minimum file size support.
 * 2018-10-04:
   * asynchronous & multi-thread parse tumblr site;
   * optimize code structure;

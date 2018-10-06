@@ -150,6 +150,11 @@ def download_thread(thread_name):
             with open(_temp_path, 'wb') as f:
                 for content in r.iter_content(chunk_size=chunk_size):
                     f.write(content)
+            # 判断文件大小是否符合参数设置
+            if cli_args.min_size and \
+                    os.path.getsize(_temp_path) < cli_args.min_size:
+                print(msg.format('Too Small', task_path))
+                continue
             # 下载完后再移动到目标目录
             shutil.move(_temp_path, task_path)
         except (IOError, OSError):
