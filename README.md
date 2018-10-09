@@ -25,7 +25,7 @@ $ pip install pySocks
 
 # Usage
 ```shell
-usage: tumblr-crawler.py [-h] [-t {all,photo,video}] [-d SAVE_DIR] [-x PROXY]
+usage: tumblr-crawler.py [-h] [-p] [-v] [-d SAVE_DIR] [-x PROXY]
                          [-n THREAD_NUM] [--min MIN_SIZE] [--overwrite]
                          [--interval INTERVAL] [--retries RETRIES]
                          sites [sites ...]
@@ -37,8 +37,8 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t {all,photo,video}, --type {all,photo,video}
-                        tumblr post type you want to crawler
+  -p, --photo           whether to download photo
+  -v, --video           whether to download video
   -d SAVE_DIR, --dir SAVE_DIR
                         download file save directory
   -x PROXY, --proxy PROXY
@@ -58,9 +58,10 @@ optional arguments:
 $ python tumblr-crawler.py liamtbyrne
 ```
 
-* you just want download all videos, not include photos:
+* specify the download file type:
 ```shell
-$ python tumblr-cralwer.py -t video liamtbyrne
+$ python tumblr-cralwer.py -p liamtbyrne  # download photos only
+$ python tumblr-cralwer.py --video liamtbyrne  # download videos only
 ```
 
 * you want put download all files to another directory:
@@ -91,6 +92,8 @@ $ python tumblr-rawlwer.py --min 100k liamtbyrne  # only download files larger t
 * ...
 
 # Change log
+* 2018-10-09:
+  * update command line args.
 * 2018-10-06:
   * add minimum file size support.
 * 2018-10-04:

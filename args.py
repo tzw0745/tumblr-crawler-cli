@@ -86,8 +86,12 @@ parser = argparse.ArgumentParser(
 #     help='config file path'
 # )
 parser.add_argument(
-    '-t', '--type', dest='post_type', default='all',
-    choices=['all', 'photo', 'video'], help='tumblr post type you want to crawler'
+    '-p', '--photo', dest='down_photo',
+    action='store_true', help='whether to download photo'
+)
+parser.add_argument(
+    '-v', '--video', dest='down_video',
+    action='store_true', help='whether to download video'
 )
 parser.add_argument(
     '-d', '--dir', dest='save_dir', action=ReadableDir,

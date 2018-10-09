@@ -27,7 +27,7 @@ $ pip install pySocks
 
 # 使用方法
 ```shell
-usage: tumblr-crawler.py [-h] [-t {all,photo,video}] [-d SAVE_DIR] [-x PROXY]
+usage: tumblr-crawler.py [-h] [-p] [-v] [-d SAVE_DIR] [-x PROXY]
                          [-n THREAD_NUM] [--min MIN_SIZE] [--overwrite]
                          [--interval INTERVAL] [--retries RETRIES]
                          sites [sites ...]
@@ -39,8 +39,8 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t {all,photo,video}, --type {all,photo,video}
-                        tumblr post type you want to crawler
+  -p, --photo           whether to download photo
+  -v, --video           whether to download video
   -d SAVE_DIR, --dir SAVE_DIR
                         download file save directory
   -x PROXY, --proxy PROXY
@@ -60,9 +60,10 @@ optional arguments:
 $ python tumblr-crawler.py liamtbyrne
 ```
 
-* 只下载视频，不下载图片：
+* 指定下载文件类型：
 ```shell
-$ python tumblr-cralwer.py -t video liamtbyrne
+$ python tumblr-cralwer.py -p liamtbyrne  # 只下载图片
+$ python tumblr-cralwer.py --video liamtbyrne  # 只下载视频
 ```
 
 * 下载文件到其它文件夹：
@@ -93,6 +94,8 @@ $ python tumblr-rawlwer.py --min 100k liamtbyrne  # 只下载超过100k的文件
 * ……
 
 # 更新日志
+* 2018年10月09日：
+  * 修改命令行参数。
 * 2018年10月06日：
   * 增加最小文件体积设置。
 * 2018年10月04日：

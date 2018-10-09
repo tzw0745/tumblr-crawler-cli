@@ -46,8 +46,8 @@ session = requests.session()
 if cli_args.proxy:
     session.proxies = {'http': cli_args.proxy, 'https': cli_args.proxy}
 # 初始化待解析站点队列
-for site_name in cli_args.sites:
-    queue_sites.put(site_name)
+for _site in cli_args.sites:
+    queue_sites.put(_site)
 
 # 当post信息非标准格式时解析图片的正则
 photo_regex = re.compile(r'https://\d+.media.tumblr.com/\w{32}/tumblr_[\w.]+')
@@ -94,7 +94,7 @@ def parse_site_thread():
 
         global queue_down
         gmt_fmt = '%Y-%m-%d %H.%M.%S GMT'
-        if cli_args.post_type in ('photo', 'all'):
+        if cli_args.down_photo:
             for post in tumblr_posts(site_name, 'photo', get_method=_get):
                 post_id, date = post['id'], post['gmt'].strftime(gmt_fmt)
                 # 将图片url加入下载队列
@@ -103,7 +103,7 @@ def parse_site_thread():
                     photo_name = '{}.{}.{}'.format(date, post_id, photo_name)
                     photo_path = os.path.join(site_dir, photo_name)
                     queue_down.put((photo_path, photo_url))
-        if cli_args.post_type in ('video', 'all'):
+        if cli_args.down_video:
             for post in tumblr_posts(site_name, 'video', get_method=_get):
                 # 将视频url加入下载队列
                 post['date'] = post['gmt'].strftime(gmt_fmt)
