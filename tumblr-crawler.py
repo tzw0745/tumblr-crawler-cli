@@ -41,6 +41,9 @@ queue_down = Queue()  # 下载任务队列
 down_stop = False  # 下载停止信号
 cli_args = parser.parse_args()  # 命令行参数
 
+# 默认全部下载
+if not cli_args.down_photo and not cli_args.down_video:
+    cli_args.down_photo = cli_args.down_video = True
 # 创建http request session并设置代理
 session = requests.session()
 if cli_args.proxy:
@@ -217,11 +220,11 @@ def tumblr_posts(site, post_type, get_method=requests.get):
                         for photo in photo_set.iterfind('photo'):
                             photos.append(_max_width_sub(photo, 'photo-url'))
                     first_photo = _max_width_sub(post, 'photo-url')
-                    if first_photo:
+                    if first_photo not in photos:
                         photos.append(first_photo)
                 else:  # 非标准格式，用正则
                     photos = photo_regex.findall(''.join(post.itertext()))
-                post_info['photos'] = photos
+                post_info['photos'] = list(set(photos))
                 yield post_info
             elif post_type == 'video':
                 # 获取视频链接
