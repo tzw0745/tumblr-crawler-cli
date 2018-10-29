@@ -62,30 +62,30 @@ $ python tumblr-crawler.py liamtbyrne
 
 * 指定下载文件类型：
 ```shell
-$ python tumblr-cralwer.py -p liamtbyrne  # 只下载图片
-$ python tumblr-cralwer.py --video liamtbyrne  # 只下载视频
+$ python tumblr-crawler.py -p liamtbyrne  # 只下载图片
+$ python tumblr-crawler.py --video liamtbyrne  # 只下载视频
 ```
 
 * 下载文件到其它文件夹：
 ```shell
-$ python tumblr-cralwer.py -d /somedir/ liamtbyrne
+$ python tumblr-crawler.py -d /somedir/ liamtbyrne
 ```
 
 * 设置网络代理：
 ```shell
-$ python tumblr-cralwer.py --proxy http://127.0.0.1:1080 liamtbyrne  # http proxy
-$ python tumblr-cralwer.py -x socks5h://127.0.0.1:1080 liamtbyrne  # socket5 proxy
+$ python tumblr-crawler.py --proxy http://127.0.0.1:1080 liamtbyrne  # http proxy
+$ python tumblr-crawler.py -x socks5h://127.0.0.1:1080 liamtbyrne  # socket5 proxy
 ```
 
 * 设置更多下载线程以提高下载速度：
 ```shell
-$ python tumblr-cralwer.py -n 20 liamtbyrne
+$ python tumblr-crawler.py -n 20 liamtbyrne
 ```
 
 * 只希望下载超过一定大小的文件：
 ```shell
-$ python tumblr-cralwer.py --min 0.5m liamtbyrne  # 只下载超过512k的文件
-$ python tumblr-rawlwer.py --min 100k liamtbyrne  # 只下载超过100k的文件
+$ python tumblr-crawler.py --min 0.5m liamtbyrne  # 只下载超过512k的文件
+$ python tumblr-crawler.py --min 100k liamtbyrne  # 只下载超过100k的文件
 ```
 
 # 待添加的功能

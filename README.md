@@ -60,30 +60,30 @@ $ python tumblr-crawler.py liamtbyrne
 
 * specify the download file type:
 ```shell
-$ python tumblr-cralwer.py -p liamtbyrne  # download photos only
-$ python tumblr-cralwer.py --video liamtbyrne  # download videos only
+$ python tumblr-crawler.py -p liamtbyrne  # download photos only
+$ python tumblr-crawler.py --video liamtbyrne  # download videos only
 ```
 
 * you want put download all files to another directory:
 ```shell
-$ python tumblr-cralwer.py -d /somedir/ liamtbyrne
+$ python tumblr-crawler.py -d /somedir/ liamtbyrne
 ```
 
 * you want use proxy for download files:
 ```shell
-$ python tumblr-cralwer.py --proxy http://127.0.0.1:1080 liamtbyrne  # http proxy
-$ python tumblr-cralwer.py -x socks5h://127.0.0.1:1080 liamtbyrne  # socket5 proxy
+$ python tumblr-crawler.py --proxy http://127.0.0.1:1080 liamtbyrne  # http proxy
+$ python tumblr-crawler.py -x socks5h://127.0.0.1:1080 liamtbyrne  # socket5 proxy
 ```
 
 * you want set more thread to speed up the download speed:
 ```shell
-$ python tumblr-cralwer.py -n 20 liamtbyrne
+$ python tumblr-crawler.py -n 20 liamtbyrne
 ```
 
 * you only want to download files larger than a certain size:
 ```shell
-$ python tumblr-cralwer.py --min 0.5m liamtbyrne  # only download files larger than 512k
-$ python tumblr-rawlwer.py --min 100k liamtbyrne  # only download files larger than 100k
+$ python tumblr-crawler.py --min 0.5m liamtbyrne  # only download files larger than 512k
+$ python tumblr-crawler.py --min 100k liamtbyrne  # only download files larger than 100k
 ```
 
 # Coming Feature
