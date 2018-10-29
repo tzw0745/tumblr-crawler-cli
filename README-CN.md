@@ -90,7 +90,7 @@ $ python tumblr-crawler.py --min 100k liamtbyrne  # 只下载超过100k的文件
 
 # 待添加的功能
 * 自定义下载文件命名格式。
-* 支持多种下载工具，如wget、aria2c等。
+* 配置文件。
 * ……
 
 # 更新日志

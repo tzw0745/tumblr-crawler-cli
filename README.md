@@ -88,7 +88,7 @@ $ python tumblr-crawler.py --min 100k liamtbyrne  # only download files larger t
 
 # Coming Feature
 * Customize filename format.
-* Multiple download tools support like wget, aria2c.
+* Configure file.
 * ...
 
 # Change log
