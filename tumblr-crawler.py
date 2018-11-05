@@ -33,6 +33,7 @@ except ImportError:
     os.mkdir(temp_dir) if not os.path.exists(temp_dir) else None
 
 from args import parser
+from utils import safe_format, clean_fn
 
 # endregion
 
@@ -96,23 +97,31 @@ def parse_site_thread():
         os.mkdir(site_dir) if not os.path.exists(site_dir) else None
 
         global queue_down
-        gmt_fmt = '%Y-%m-%d %H.%M.%S GMT'
+        gmt_fmt = '%Y-%m-%d %H.%M.%S'
         if cli_args.down_photo:
             for post in tumblr_posts(site_name, 'photo', get_method=_get):
                 post_id, date = post['id'], post['gmt'].strftime(gmt_fmt)
                 # 将图片url加入下载队列
                 for photo_url in post['photos']:
-                    photo_name = os.path.split(urlsplit(photo_url).path)[-1]
-                    photo_name = '{}.{}.{}'.format(date, post_id, photo_name)
-                    photo_path = os.path.join(site_dir, photo_name)
-                    queue_down.put((photo_path, photo_url))
+                    uid = re.findall(r'tumblr_([a-zA-Z0-9]{15,})', photo_url)[0]
+                    args = {'post_id': post['id'], 'type': post['type'],
+                            'uid': uid, 'date': post['gmt'],
+                            'timestamp': post['timestamp']}
+                    ext = re.findall(r'\.[a-zA-Z0-9]{3,}$', photo_url)[0]
+                    filename = safe_format(cli_args.fn_fmt, **args) + ext
+                    file_path = os.path.join(site_dir, clean_fn(filename))
+                    queue_down.put((file_path, photo_url))
         if cli_args.down_video:
             for post in tumblr_posts(site_name, 'video', get_method=_get):
                 # 将视频url加入下载队列
-                post['date'] = post['gmt'].strftime(gmt_fmt)
-                video_name = '{i[date]}.{i[id]}.{i[ext]}'.format(i=post)
-                video_path = os.path.join(site_dir, video_name)
-                queue_down.put((video_path, post['video']))
+                uid = re.findall(r'tumblr_([a-zA-Z0-9]{15,})', post['video'])[0]
+                args = {'post_id': post['id'], 'type': post['type'],
+                        'uid': uid, 'date': post['gmt'],
+                        'timestamp': post['timestamp']}
+                filename = safe_format(cli_args.fn_fmt, **args)
+                ext = '.' + post['ext']
+                file_path = os.path.join(site_dir, clean_fn(filename + ext))
+                queue_down.put((file_path, post['video']))
 
 
 def download_thread(thread_name):
@@ -210,7 +219,8 @@ def tumblr_posts(site, post_type, get_method=requests.get):
             post_info = {
                 'id': post.get('id'),
                 'gmt': datetime.strptime(post.get('date-gmt'), gmt_fmt),
-                'type': post_type
+                'type': post_type,
+                'timestamp': post.get('unix-timestamp')
             }
             if post_type == 'photo':
                 # 获取文章下所有图片链接

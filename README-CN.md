@@ -27,7 +27,7 @@ $ pip install pySocks
 
 # 使用方法
 ```shell
-usage: tumblr-crawler.py [-h] [-p] [-v] [-d SAVE_DIR] [-x PROXY]
+usage: tumblr-crawler.py [-h] [-p] [-v] [-d SAVE_DIR] [-f FN_FMT] [-x PROXY]
                          [-n THREAD_NUM] [--min MIN_SIZE] [--overwrite]
                          [--interval INTERVAL] [--retries RETRIES]
                          sites [sites ...]
@@ -43,6 +43,8 @@ optional arguments:
   -v, --video           whether to download video
   -d SAVE_DIR, --dir SAVE_DIR
                         download file save directory
+  -f FN_FMT, --format FN_FMT
+                        filename format
   -x PROXY, --proxy PROXY
                         http request agent, support http/socks
   -n THREAD_NUM, --thread THREAD_NUM
@@ -71,6 +73,19 @@ $ python tumblr-crawler.py --video liamtbyrne  # 只下载视频
 $ python tumblr-crawler.py -d /somedir/ liamtbyrne
 ```
 
+* 设置文件名格式:
+```shell
+$ python tumblr-crawler.py -f "{date:%Y-%m-%d %H.%M.%S} GMT.{post_id}.{uid}" liamtbyrne  # 默认
+$ python tumblr-crawler.py --format {uid} liamtbyrne
+```
+> 第一个例子下载文件的名称："2015-10-16 06.04.53 GMT.13126.5pzVb1s7wpcjo10.jpg"
+> 第二个例子下载文件的名称："5pzVb1s7wpcjo10.jpg"
+> `{uid}`是必须的，其它可选参数包括：
+> * `{post_id}`：tumblr post id, 类似`13126`；
+> * `{type}`：`video`或`photo`；
+> * `{date}`：tumblr post的时间日期，支持详细设定；
+> * `{timestamp}`：unix时间戳，比如`1541405838`。
+
 * 设置网络代理：
 ```shell
 $ python tumblr-crawler.py --proxy http://127.0.0.1:1080 liamtbyrne  # http proxy
@@ -94,6 +109,8 @@ $ python tumblr-crawler.py --min 100k liamtbyrne  # 只下载超过100k的文件
 * ……
 
 # 更新日志
+* 2018年11月05日：
+  * 增加文件名格式设置。
 * 2018年10月09日：
   * 修改命令行参数。
 * 2018年10月06日：

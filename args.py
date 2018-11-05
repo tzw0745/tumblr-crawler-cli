@@ -78,6 +78,14 @@ class LimitMinSize(argparse.Action):
         setattr(namespace, self.dest, min_size)
 
 
+class CheckFormat(argparse.Action):
+    def __call__(self, _parser, namespace, values, option_string=None):
+        if '{uid}' not in values:
+            err_msg = 'FORMAT:{f} must container {uid}'
+            raise argparse.ArgumentTypeError(err_msg.format(f=values, uid='{uid}'))
+        setattr(namespace, self.dest, values)
+
+
 parser = argparse.ArgumentParser(
     description='Crawler Tumblr Photos and Videos'
 )
@@ -96,6 +104,10 @@ parser.add_argument(
 parser.add_argument(
     '-d', '--dir', dest='save_dir', action=ReadableDir,
     default='.', help='download file save directory'
+)
+parser.add_argument(
+    '-f', '--format', dest='fn_fmt', action=CheckFormat, help='filename format',
+    default='{date:%Y-%m-%d %H.%M.%S} GMT.{post_id}.{uid}'
 )
 parser.add_argument(
     '-x', '--proxy', dest='proxy',

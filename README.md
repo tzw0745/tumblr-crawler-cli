@@ -8,7 +8,7 @@ Tumblr Download Tool with High Speed and Customization.
 * Rich command line parameters support.
 * Multi-threaded Download support.
 * File will be download completely.
-* Different Type of Proxy support.
+* Custom filename format.
 * Python2 & Python3 Compatibility.
 
 # Prepare
@@ -25,7 +25,7 @@ $ pip install pySocks
 
 # Usage
 ```shell
-usage: tumblr-crawler.py [-h] [-p] [-v] [-d SAVE_DIR] [-x PROXY]
+usage: tumblr-crawler.py [-h] [-p] [-v] [-d SAVE_DIR] [-f FN_FMT] [-x PROXY]
                          [-n THREAD_NUM] [--min MIN_SIZE] [--overwrite]
                          [--interval INTERVAL] [--retries RETRIES]
                          sites [sites ...]
@@ -41,6 +41,8 @@ optional arguments:
   -v, --video           whether to download video
   -d SAVE_DIR, --dir SAVE_DIR
                         download file save directory
+  -f FN_FMT, --format FN_FMT
+                        filename format
   -x PROXY, --proxy PROXY
                         http request agent, support http/socks
   -n THREAD_NUM, --thread THREAD_NUM
@@ -69,6 +71,19 @@ $ python tumblr-crawler.py --video liamtbyrne  # download videos only
 $ python tumblr-crawler.py -d /somedir/ liamtbyrne
 ```
 
+* you want custom filename format:
+```shell
+$ python tumblr-crawler.py -f "{date:%Y-%m-%d %H.%M.%S} GMT.{post_id}.{uid}" liamtbyrne  # default
+$ python tumblr-crawler.py --format {uid} liamtbyrne
+```
+> first example will save file like: "2015-10-16 06.04.53 GMT.13126.5pzVb1s7wpcjo10.jpg"
+> second example will save file like: "5pzVb1s7wpcjo10.jpg"
+> `{uid}` is necessary, other optional parameter include:
+> * `{post_id}`: id of tumblr post, like `13126`;
+> * `{type}`: `video` or `photo`;
+> * `{date}`: datetime of tumblr post, support detailed settings;
+> * `{timestamp}`: unix timestamp, like `1541405838`.
+
 * you want use proxy for download files:
 ```shell
 $ python tumblr-crawler.py --proxy http://127.0.0.1:1080 liamtbyrne  # http proxy
@@ -92,6 +107,8 @@ $ python tumblr-crawler.py --min 100k liamtbyrne  # only download files larger t
 * ...
 
 # Change log
+* 2018-11-05:
+  * support custom filename format.
 * 2018-10-09:
   * update command line args.
 * 2018-10-06:
