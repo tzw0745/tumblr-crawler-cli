@@ -102,11 +102,12 @@ $ python tumblr-crawler.py --min 100k liamtbyrne  # only download files larger t
 ```
 
 # Coming Feature
-* Customize filename format.
 * Configure file.
 * ...
 
 # Change log
+* 2018-12-05:
+  * support inline photo url.
 * 2018-11-05:
   * support custom filename format.
 * 2018-10-09:
