@@ -8,7 +8,8 @@
 * 丰富的命令行。
 * 支持多线程下载。
 * 确保文件完整性。
-* 支持不同类型的网络代理。
+* 支持自定义文件名格式。
+* 支持同时处理多个tumblr站点。
 * 兼容Python2和Python3。
 
 # 准备工作
@@ -57,9 +58,9 @@ optional arguments:
 ```
 
 ## 例子
-* 下载Tumblr [@liamtbyrne](http://liamtbyrne.tumblr.com)上所有的图片和视频：
+* 下载Tumblr [@liamtbyrne](http://liamtbyrne.tumblr.com)和[@lizclimo](http://lizclimo.tumblr.com/)上所有的图片和视频：
 ```shell
-$ python tumblr-crawler.py liamtbyrne
+$ python tumblr-crawler.py liamtbyrne lizclimo
 ```
 
 * 指定下载文件类型：

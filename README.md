@@ -9,6 +9,7 @@ Tumblr Download Tool with High Speed and Customization.
 * Multi-threaded Download support.
 * File will be download completely.
 * Custom filename format.
+* Support crawler multiple sites at the same time.
 * Python2 & Python3 Compatibility.
 
 # Prepare
@@ -55,9 +56,9 @@ optional arguments:
 ```
 
 ## Example
-* you want download all photos and videos from tumblr [@liamtbyrne](http://liamtbyrne.tumblr.com):
+* you want download all photos and videos from tumblr [@liamtbyrne](http://liamtbyrne.tumblr.com) & [@lizclimo](http://lizclimo.tumblr.com/):
 ```shell
-$ python tumblr-crawler.py liamtbyrne
+$ python tumblr-crawler.py liamtbyrne lizclimo
 ```
 
 * specify the download file type:
