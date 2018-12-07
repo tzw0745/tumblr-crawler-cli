@@ -6,9 +6,9 @@ Created by tzw0745 at 18-9-28
 import json
 import os
 import re
+import shutil
 import time
 from datetime import datetime
-import shutil
 from threading import Thread
 
 import requests
@@ -28,7 +28,7 @@ try:
     from tempfile import TemporaryDirectory
 
     temp_dir = TemporaryDirectory('tumblr_crawler_cli')
-except ImportError:
+except (ImportError, ImportError):
     temp_dir = '.tumblr_crawler_cli'
     os.mkdir(temp_dir) if not os.path.exists(temp_dir) else None
 
@@ -97,10 +97,8 @@ def parse_site_thread():
         os.mkdir(site_dir) if not os.path.exists(site_dir) else None
 
         global queue_down
-        gmt_fmt = '%Y-%m-%d %H.%M.%S'
         if cli_args.down_photo:
             for post in tumblr_posts(site_name, 'photo', get_method=_get):
-                post_id, date = post['id'], post['gmt'].strftime(gmt_fmt)
                 # 将图片url加入下载队列
                 for photo_url in post['photos']:
                     uid_reg = r'tumblr_(inline_)?([a-zA-Z0-9]{15,})'
