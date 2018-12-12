@@ -146,9 +146,10 @@ def download_thread(thread_name):
         # 向url发送请求
         try:
             r = _get(task_url, timeout=3)
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as e:
             # 请求失败
             print(msg.format('RequestException', task_path))
+            print(str(e))
             continue
         # 先写入临时文件
         _temp_name = 'tumblr_thread_{}.downloading'.format(thread_name)
