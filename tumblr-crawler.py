@@ -101,8 +101,8 @@ def parse_site_thread():
             for post in tumblr_posts(site_name, 'photo', get_method=_get):
                 # 将图片url加入下载队列
                 for photo_url in post['photos']:
-                    uid_reg = r'tumblr_(inline_)?([a-zA-Z0-9]{15,})'
-                    uid = re.findall(uid_reg, photo_url)[0][1]
+                    uid_reg = r'[/_]([a-zA-Z0-9]{8,})_'
+                    uid = re.findall(uid_reg, photo_url)[0]
                     args = {'post_id': post['id'], 'type': post['type'],
                             'uid': uid, 'date': post['gmt'],
                             'timestamp': post['timestamp']}

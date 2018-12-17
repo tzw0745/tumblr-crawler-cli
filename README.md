@@ -107,6 +107,8 @@ $ python tumblr-crawler.py --min 100k liamtbyrne  # only download files larger t
 * ...
 
 # Change log
+* 2018-12-17:
+  * improve image url compatibility.
 * 2018-12-05:
   * support inline photo url.
 * 2018-11-05:

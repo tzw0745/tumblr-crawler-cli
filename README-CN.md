@@ -109,6 +109,8 @@ $ python tumblr-crawler.py --min 100k liamtbyrne  # 只下载超过100k的文件
 * ……
 
 # 更新日志
+* 2018年12月17日：
+  * 增加图片兼容性。
 * 2018年12月05日：
   * 支持inline格式图片url。
 * 2018年11月05日：
