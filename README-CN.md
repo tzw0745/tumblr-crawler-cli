@@ -2,7 +2,7 @@
 
 # tumblr-crawler-cli
 高性能&高定制化的Tumblr下载工具。
-![preview](https://raw.githubusercontent.com/tzw0745/tumblr-crawler-cli/develop/preview.jpg)
+![preview](https://raw.githubusercontent.com/tzw0745/tumblr-crawler-cli/master/preview.jpg)
 
 # 特性 
 * 丰富的命令行。

@@ -2,7 +2,7 @@
 
 # tumblr-crawler-cli
 Tumblr Download Tool with High Speed and Customization.
-![preview](https://raw.githubusercontent.com/tzw0745/tumblr-crawler-cli/develop/preview.jpg)
+![preview](https://raw.githubusercontent.com/tzw0745/tumblr-crawler-cli/master/preview.jpg)
 
 # Feature
 * Rich command line parameters support.
